@@ -11,7 +11,7 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Prefer API key from environment for safety; fallback to hardcoded if present
-API_KEY = os.environ.get("GENAI_API_KEY", "AIzaSyA40JWBLMkvv_N0cyURsnJWMfGh5lRD0vE")
+API_KEY = os.environ.get("GENAI_API_KEY", "api_key")
 client = genai.Client(api_key=API_KEY)
 
 # Configure basic logging
@@ -173,4 +173,5 @@ def analyze():
 # RUN
 # ==============================
 if __name__ == "__main__":
+
     app.run(debug=True, port=8080)
