@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TalentMatch | AI-Powered ATS</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 1);
+        }
+
+        .drop-zone {
+            transition: all 0.3s ease;
+            border: 2px dashed #cbd5e1;
+        }
+
+        .drop-zone.active {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+            transform: scale(1.01);
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .markdown-content ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1rem; }
+        .markdown-content p { margin-bottom: 0.75rem; }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 glass-panel px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <div class="bg-blue-600 p-2 rounded-lg text-white">
+                <i class="fas fa-bolt"></i>
+            </div>
+            <span class="text-xl font-bold tracking-tight text-slate-800">TalentMatch <span class="text-blue-600">Pro</span></span>
+        </div>
+        <div class="flex items-center gap-6 text-sm font-medium text-slate-600">
+            <a href="#" class="hover:text-blue-600 transition-colors">Dashboard</a>
+            <a href="#" class="text-blue-600 font-semibold border-b-2 border-blue-600 pb-1">AI Analyzer</a>
+            <div class="h-8 w-8 rounded-full bg-slate-200 border border-slate-300 overflow-hidden">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Felix" alt="User">
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-10">
+        
+        <header class="mb-10">
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">Resume-JD Compliance Tool</h1>
+            <p class="text-slate-500 max-w-2xl">Connected to your Python Backend. Your resumes are parsed using Gemini AI to find the perfect match.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Left Panel: Inputs -->
+            <div class="lg:col-span-7 space-y-8">
+                
+                <!-- Section 1: Job Description -->
+                <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">1</span>
+                            <h2 class="text-lg font-semibold text-slate-800">Job Description</h2>
+                        </div>
+                    </div>
+                    <textarea 
+                        id="jd-text"
+                        class="w-full h-48 p-4 rounded-xl bg-slate-50 border border-slate-200 focus:ring-2 focus:ring-blue-500 outline-none text-slate-700 leading-relaxed custom-scrollbar"
+                        placeholder="Paste the job description requirements here..."
+                    ></textarea>
+                </section>
+
+                <!-- Section 2: Resume Upload -->
+                <section class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center gap-2">
+                            <span class="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">2</span>
+                            <h2 class="text-lg font-semibold text-slate-800">Upload Resume (PDF)</h2>
+                        </div>
+                    </div>
+                    
+                    <div id="drop-zone" class="drop-zone rounded-2xl p-8 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50">
+                        <input type="file" id="file-input" class="hidden" accept=".pdf">
+                        <i class="fas fa-file-pdf text-3xl text-blue-600 mb-2"></i>
+                        <h3 class="text-slate-800 font-semibold text-sm">Click or drop candidate PDF</h3>
+                    </div>
+
+                    <div id="file-list" class="mt-4"></div>
+                </section>
+
+                <div class="flex items-center justify-end gap-4 mt-8">
+                    <button 
+                        id="analyze-btn"
+                        onclick="startAnalysis()"
+                        class="w-full md:w-auto px-10 py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                        <span>Analyze with Gemini AI</span>
+                        <i class="fas fa-rocket text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Panel: Results -->
+            <div class="lg:col-span-5">
+                <aside id="results-panel" class="bg-slate-900 text-white rounded-2xl p-6 shadow-xl sticky top-24 min-h-[500px]">
+                    <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-blue-400"></i>
+                        Analysis Result
+                    </h2>
+
+                    <!-- Initial State -->
+                    <div id="results-empty" class="flex flex-col items-center justify-center h-64 text-center">
+                        <div class="w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-500">
+                            <i class="fas fa-hourglass-start text-2xl"></i>
+                        </div>
+                        <p class="text-slate-400 text-sm">Waiting for input...</p>
+                    </div>
+
+                    <!-- Loading State -->
+                    <div id="results-loading" class="hidden space-y-6">
+                        <div class="flex justify-center py-10">
+                            <div class="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent"></div>
+                        </div>
+                        <p class="text-center text-blue-400 font-medium">Gemini is analyzing your resume...</p>
+                    </div>
+
+                    <!-- Data State -->
+                    <div id="results-content" class="hidden space-y-6 overflow-y-auto max-h-[70vh] custom-scrollbar pr-2">
+                        <div class="text-center">
+                            <div class="text-4xl font-bold text-blue-400 mb-1" id="match-score">--%</div>
+                            <div class="text-xs uppercase tracking-widest text-slate-500 font-bold">Overall Match</div>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-4">
+                            <h4 class="text-sm font-bold text-blue-400 mb-2 uppercase tracking-wider">AI Assessment</h4>
+                            <div id="ats-feedback" class="text-sm text-slate-300 leading-relaxed markdown-content"></div>
+                        </div>
+
+                        <div class="border-t border-slate-800 pt-4">
+                            <h4 class="text-sm font-bold text-blue-400 mb-2 uppercase tracking-wider">Parsed Skills</h4>
+                            <div id="parsed-data" class="text-xs text-slate-400 italic markdown-content"></div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-10 left-1/2 -translate-x-1/2 bg-slate-900 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 opacity-0 pointer-events-none transition-all z-[100]">
+        <span id="toast-message">Message here</span>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const fileList = document.getElementById('file-list');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        
+        let selectedFile = null;
+
+        // File Selection Logic
+        dropZone.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                updateFileList();
+            }
+        });
+
+        // Drag & Drop
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.classList.add('active'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            if (e.dataTransfer.files.length > 0) {
+                selectedFile = e.dataTransfer.files[0];
+                updateFileList();
+            }
+        });
+
+        function updateFileList() {
+            fileList.innerHTML = `
+                <div class="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-xl">
+                    <div class="flex items-center gap-2 overflow-hidden">
+                        <i class="fas fa-file-pdf text-blue-600"></i>
+                        <span class="text-sm font-medium truncate text-slate-700">${selectedFile.name}</span>
+                    </div>
+                    <button onclick="clearFile()" class="text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
+                </div>
+            `;
+        }
+
+        function clearFile() {
+            selectedFile = null;
+            fileList.innerHTML = '';
+        }
+
+        function showToast(msg, isError = false) {
+            toastMessage.textContent = msg;
+            toast.classList.toggle('bg-red-600', isError);
+            toast.style.opacity = '1';
+            setTimeout(() => toast.style.opacity = '0', 3000);
+        }
+
+        // BACKEND CONNECTION
+        async function startAnalysis() {
+            const jd = document.getElementById('jd-text').value;
+            const btn = document.getElementById('analyze-btn');
+
+            if (!jd || !selectedFile) {
+                showToast("Please provide both Job Description and Resume PDF.", true);
+                return;
+            }
+
+            // Toggle Loading UI
+            document.getElementById('results-empty').classList.add('hidden');
+            document.getElementById('results-loading').classList.remove('hidden');
+            document.getElementById('results-content').classList.add('hidden');
+            btn.disabled = true;
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+            const formData = new FormData();
+            formData.append('resume', selectedFile);
+            formData.append('job_description', jd);
+
+            try {
+                // Change the URL to your local Flask server address if different
+                const response = await fetch('http://127.0.0.1:8080/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) throw new Error("Server responded with error");
+
+                const data = await response.json();
+                displayResults(data);
+            } catch (error) {
+                console.error(error);
+                showToast("Connection failed. Ensure Flask server is running on :8080", true);
+                document.getElementById('results-empty').classList.remove('hidden');
+                document.getElementById('results-loading').classList.add('hidden');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        function displayResults(data) {
+            document.getElementById('results-loading').classList.add('hidden');
+            const content = document.getElementById('results-content');
+            content.classList.remove('hidden');
+
+            // Extract percentage from Gemini's response string if possible
+            // Matches something like "Match Percentage: 85%" or "85/100"
+            const scoreMatch = data.ats_result.match(/(\d+)%/);
+            const score = scoreMatch ? scoreMatch[0] : "AI Check";
+            
+            document.getElementById('match-score').textContent = score;
+            
+            // Format Markdown-like output from Gemini to simple HTML for display
+            // (Simple conversion for bullet points)
+            const formatAIOutput = (text) => {
+                return text
+                    .replace(/\n/g, '<br>')
+                    .replace(/\* (.*?)(<br>|$)/g, '<li>$1</li>')
+                    .replace(/(<li>.*?<\/li>)+/g, '<ul>$&</ul>');
+            };
+
+            document.getElementById('ats-feedback').innerHTML = formatAIOutput(data.ats_result);
+            document.getElementById('parsed-data').innerHTML = `<strong>Parsed Resume Data:</strong><br>${formatAIOutput(data.parsed_resume)}`;
+            
+            showToast("Analysis Complete!");
+        }
+    </script>
+</body>
+</html>
